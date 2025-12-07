@@ -25,10 +25,26 @@ CRISP_KEY=your-key-here
 ```
 
 **获取 Crisp API 凭证：**
+
+重要：这里需要的是 **Plugin credentials**，不是 website_id！
+
 1. 登录 [Crisp Dashboard](https://app.crisp.chat/)
-2. 选择你的网站
-3. 左侧菜单 → Settings → API
-4. 创建新的 API key 或使用现有的
+2. 点击右上角头像 → **Your Profile**（不是选择网站）
+3. 左侧菜单 → **Plugins**
+4. 点击 **Create a new plugin**
+5. 填写基本信息：
+   - Name: 随便填（例如：My Bot）
+   - Description: 随便填
+   - Website: 留空
+6. 创建后会显示：
+   - **Plugin ID** → 这个是你的 `CRISP_IDENTIFIER`
+   - **Plugin Key** → 这个是你的 `CRISP_KEY`
+7. 复制这两个值到 `.env` 文件
+
+注意：
+- Plugin ID 格式类似：`7f3e7b5e-xxxx-xxxx-xxxx-xxxxxxxxxxxx`
+- Plugin Key 是一长串字符串
+- 不要和 website_id 混淆（website_id 在代码中已经自动获取）
 
 ### 2. 运行服务器
 
