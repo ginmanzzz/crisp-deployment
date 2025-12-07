@@ -34,10 +34,10 @@ CRISP_KEY=your-key-here
 
 ```bash
 # 加载环境变量并运行
-export $(cat .env | xargs) && go run main.go
+set -a && source .env && set +a && go run main.go
 ```
 
-服务器将在 `http://localhost:8080` 启动。
+服务器将在 `http://localhost:8080` 启动（或 `.env` 中配置的端口）。
 
 ### 3. 配置 Crisp Webhook
 
