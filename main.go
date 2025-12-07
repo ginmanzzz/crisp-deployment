@@ -87,7 +87,7 @@ func generateAIReply(userMessage string) string {
 }
 
 func sendCrispMessage(websiteID, sessionID, message string) error {
-	_, err := client.Website.SendMessageInConversation(websiteID, sessionID, crisp.MessageText{
+	_, _, err := client.Website.SendTextMessageInConversation(websiteID, sessionID, crisp.ConversationTextMessageNew{
 		Type:    "text",
 		From:    "operator",
 		Origin:  "chat",
