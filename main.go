@@ -118,7 +118,6 @@ func sendCrispMessage(websiteID, sessionID, message string) error {
 
 	req.SetBasicAuth(crispIdentifier, crispKey)
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("X-Crisp-Tier", "plugin")
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
