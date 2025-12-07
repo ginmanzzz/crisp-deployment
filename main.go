@@ -1,13 +1,14 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/crisp-im/go-crisp-api/crisp"
 )
 
 type CrispWebhookEvent struct {
@@ -21,19 +22,12 @@ type CrispWebhookEvent struct {
 	} `json:"data"`
 }
 
-type CrispMessageRequest struct {
-	Type    string `json:"type"`
-	From    string `json:"from"`
-	Origin  string `json:"origin"`
-	Content string `json:"content"`
-}
-
-var (
-	crispIdentifier = os.Getenv("CRISP_IDENTIFIER")
-	crispKey        = os.Getenv("CRISP_KEY")
-)
+var client *crisp.Client
 
 func main() {
+	client = crisp.New()
+	client.Authenticate(os.Getenv("CRISP_IDENTIFIER"), os.Getenv("CRISP_KEY"))
+
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "index.html")
 	})
@@ -93,43 +87,15 @@ func generateAIReply(userMessage string) string {
 }
 
 func sendCrispMessage(websiteID, sessionID, message string) error {
-	if crispIdentifier == "" || crispKey == "" {
-		return fmt.Errorf("Crisp API credentials not configured")
-	}
-
-	url := fmt.Sprintf("https://api.crisp.chat/v1/website/%s/conversation/%s/message", websiteID, sessionID)
-
-	payload := CrispMessageRequest{
+	_, err := client.Website.SendMessageInConversation(websiteID, sessionID, crisp.ConversationMessageNew{
 		Type:    "text",
 		From:    "operator",
 		Origin:  "chat",
 		Content: message,
-	}
+	})
 
-	jsonData, err := json.Marshal(payload)
 	if err != nil {
-		return fmt.Errorf("error marshaling JSON: %w", err)
-	}
-
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
-	if err != nil {
-		return fmt.Errorf("error creating request: %w", err)
-	}
-
-	req.SetBasicAuth(crispIdentifier, crispKey)
-	req.Header.Set("Content-Type", "application/json")
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return fmt.Errorf("error sending request: %w", err)
-	}
-	defer resp.Body.Close()
-
-	respBody, _ := io.ReadAll(resp.Body)
-
-	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
-		return fmt.Errorf("Crisp API error: %d - %s", resp.StatusCode, string(respBody))
+		return fmt.Errorf("error sending message: %w", err)
 	}
 
 	return nil
