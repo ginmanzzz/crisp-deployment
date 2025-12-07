@@ -1,6 +1,8 @@
 module crisp-deployment
 
-go 1.25.4
+go 1.20
+
+toolchain go1.20.0
 
 require (
 	github.com/crisp-im/go-crisp-api/crisp v0.0.0-20221109084041-903758fdb25e // indirect
