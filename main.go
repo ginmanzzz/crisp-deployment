@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/crisp-im/go-crisp-api/crisp"
+	"github.com/crisp-im/go-crisp-api/crisp/v3"
 )
 
 type CrispWebhookEvent struct {
@@ -87,14 +87,12 @@ func generateAIReply(userMessage string) string {
 }
 
 func sendCrispMessage(websiteID, sessionID, message string) error {
-	data := crisp.MessageData{
+	_, err := client.Website.SendMessageInConversation(websiteID, sessionID, crisp.MessageText{
 		Type:    "text",
 		From:    "operator",
 		Origin:  "chat",
 		Content: message,
-	}
-
-	_, err := client.Website.SendTextMessageInConversation(websiteID, sessionID, data)
+	})
 	if err != nil {
 		return fmt.Errorf("error sending message: %w", err)
 	}
