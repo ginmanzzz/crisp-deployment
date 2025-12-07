@@ -26,7 +26,7 @@ var client *crisp.Client
 
 func main() {
 	client = crisp.New()
-	client.Authenticate(os.Getenv("CRISP_IDENTIFIER"), os.Getenv("CRISP_KEY"))
+	client.AuthenticateTier("plugin", os.Getenv("CRISP_IDENTIFIER"), os.Getenv("CRISP_KEY"))
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "index.html")
