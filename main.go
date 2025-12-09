@@ -55,8 +55,8 @@ func main() {
 	supabaseAnonKey = os.Getenv("SUPABASE_ANON_KEY")
 	supabaseServiceKey = os.Getenv("SUPABASE_SERVICE_ROLE_KEY")
 
-	if supabaseURL == "" || supabaseServiceKey == "" {
-		log.Println("Warning: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not set")
+	if supabaseURL == "" || supabaseAnonKey == "" {
+		log.Println("Warning: SUPABASE_URL or SUPABASE_ANON_KEY not set")
 	}
 
 	// Static file serving
@@ -208,7 +208,8 @@ func handleKnowledgeList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	req.Header.Set("apikey", supabaseServiceKey)
+	// Use anon key - respects RLS policies
+	req.Header.Set("apikey", supabaseAnonKey)
 	if token != "" {
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 	}
