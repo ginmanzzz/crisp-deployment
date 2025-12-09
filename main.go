@@ -243,33 +243,28 @@ func handleKnowledgeUpload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Parse multipart form (max 10MB)
-	err := r.ParseMultipartForm(10 << 20)
+	// Read the entire request body
+	bodyBytes, err := io.ReadAll(r.Body)
 	if err != nil {
-		http.Error(w, `{"error": "Failed to parse form"}`, http.StatusBadRequest)
+		http.Error(w, `{"error": "Failed to read request body"}`, http.StatusBadRequest)
 		return
 	}
+	defer r.Body.Close()
 
-	// Forward the entire multipart form to Supabase Edge Function
-	var b bytes.Buffer
-	writer := io.MultiWriter(&b)
-
-	// Copy the entire request body
-	r.Body = io.NopCloser(bytes.NewReader([]byte{}))
-
-	// Create new multipart form
-	boundary := r.MultipartForm.Boundary
+	// Get the original Content-Type header (includes boundary)
+	contentType := r.Header.Get("Content-Type")
 
 	// Forward to Supabase
 	apiURL := fmt.Sprintf("%s/functions/v1/knowledge-upload", supabaseURL)
-	req, err := http.NewRequest("POST", apiURL, &b)
+	req, err := http.NewRequest("POST", apiURL, bytes.NewReader(bodyBytes))
 	if err != nil {
 		http.Error(w, `{"error": "Failed to create request"}`, http.StatusInternalServerError)
 		return
 	}
 
+	// Copy headers
 	req.Header.Set("Authorization", authHeader)
-	req.Header.Set("Content-Type", fmt.Sprintf("multipart/form-data; boundary=%s", boundary))
+	req.Header.Set("Content-Type", contentType)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
