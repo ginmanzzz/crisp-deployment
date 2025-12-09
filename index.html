@@ -280,6 +280,31 @@
     </script>
 
     <script>
+        // 设置 Crisp 用户信息
+        function setCrispUserInfo() {
+            const token = localStorage.getItem('access_token');
+            const email = localStorage.getItem('user_email');
+            const userId = localStorage.getItem('user_id');
+
+            if (token && email) {
+                // 设置用户邮箱
+                window.$crisp.push(["set", "user:email", [email]]);
+
+                // 设置用户昵称（使用邮箱）
+                window.$crisp.push(["set", "user:nickname", [email]]);
+
+                // 设置会话数据（包含 user_id 和 token）
+                const sessionData = [
+                    ["user_id", userId || "unknown"],
+                    ["user_email", email],
+                    ["has_token", "true"]
+                ];
+                window.$crisp.push(["set", "session:data", sessionData]);
+
+                console.log('✅ Crisp 用户信息已设置:', { email, userId });
+            }
+        }
+
         // 检查登录状态
         function checkAuth() {
             const token = localStorage.getItem('access_token');
@@ -296,6 +321,9 @@
                 document.getElementById('userEmail').textContent = email;
                 document.getElementById('userAvatar').textContent = email.charAt(0).toUpperCase();
                 document.getElementById('welcomeMessage').textContent = `欢迎回来，${email}！`;
+
+                // 设置 Crisp 用户信息
+                setCrispUserInfo();
             } else {
                 // 未登录
                 document.getElementById('loginPromptHeader').classList.add('show');
@@ -306,8 +334,14 @@
         }
 
         function logout() {
+            // 清除 Crisp 用户信息
+            if (window.$crisp) {
+                window.$crisp.push(["do", "session:reset"]);
+            }
+
             localStorage.removeItem('access_token');
             localStorage.removeItem('user_email');
+            localStorage.removeItem('user_id');
             window.location.reload();
         }
 

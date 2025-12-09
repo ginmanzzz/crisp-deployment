@@ -395,6 +395,7 @@
         // Auth check
         const token = localStorage.getItem('access_token');
         const userEmail = localStorage.getItem('user_email');
+        const userId = localStorage.getItem('user_id');
 
         if (!token) {
             window.location.href = '/login';
@@ -402,9 +403,35 @@
 
         document.getElementById('userEmail').textContent = userEmail || 'User';
 
+        // 设置 Crisp 用户信息
+        if (token && userEmail) {
+            // 设置用户邮箱
+            window.$crisp.push(["set", "user:email", [userEmail]]);
+
+            // 设置用户昵称
+            window.$crisp.push(["set", "user:nickname", [userEmail]]);
+
+            // 设置会话数据
+            const sessionData = [
+                ["user_id", userId || "unknown"],
+                ["user_email", userEmail],
+                ["has_token", "true"],
+                ["page", "knowledge_management"]
+            ];
+            window.$crisp.push(["set", "session:data", sessionData]);
+
+            console.log('✅ Crisp 用户信息已设置:', { userEmail, userId });
+        }
+
         function logout() {
+            // 清除 Crisp 用户信息
+            if (window.$crisp) {
+                window.$crisp.push(["do", "session:reset"]);
+            }
+
             localStorage.removeItem('access_token');
             localStorage.removeItem('user_email');
+            localStorage.removeItem('user_id');
             window.location.href = '/login';
         }
 

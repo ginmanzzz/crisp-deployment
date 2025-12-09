@@ -232,9 +232,10 @@
                     throw new Error(data.error || data.msg || '登录失败');
                 }
 
-                // 登录成功，保存 token
+                // 登录成功，保存 token 和用户信息
                 localStorage.setItem('access_token', data.access_token);
                 localStorage.setItem('user_email', data.user.email);
+                localStorage.setItem('user_id', data.user.id);
 
                 console.log('登录成功:', data);
 
