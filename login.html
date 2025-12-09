@@ -198,8 +198,8 @@
         function checkAuth() {
             const token = localStorage.getItem('access_token');
             if (token) {
-                // 已登录，跳转到知识库管理页面
-                window.location.href = '/knowledge';
+                // 已登录，跳转到首页
+                window.location.href = '/';
             }
         }
 
@@ -238,8 +238,8 @@
 
                 console.log('登录成功:', data);
 
-                // 跳转到知识库管理页面
-                window.location.href = '/knowledge';
+                // 跳转到首页
+                window.location.href = '/';
 
             } catch (error) {
                 console.error('登录错误:', error);

@@ -3,12 +3,270 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crisp AI客服演示</title>
+    <title>RatTrap AI客服 - 首页</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 16px;
+            background: #f3f4f6;
+            border-radius: 8px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .user-email {
+            color: #374151;
+            font-size: 14px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-logout {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-logout:hover {
+            background: #dc2626;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .welcome-box {
+            background: white;
+            border-radius: 20px;
+            padding: 48px;
+            max-width: 800px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .welcome-box h1 {
+            font-size: 48px;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .welcome-box p {
+            font-size: 18px;
+            color: #6b7280;
+            margin-bottom: 32px;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .feature-card {
+            background: #f9fafb;
+            padding: 24px;
+            border-radius: 12px;
+            transition: transform 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .feature-icon {
+            font-size: 36px;
+            margin-bottom: 12px;
+        }
+
+        .feature-title {
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+
+        .feature-desc {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .login-prompt {
+            display: none;
+        }
+
+        .login-prompt.show {
+            display: block;
+        }
+
+        .user-content {
+            display: none;
+        }
+
+        .user-content.show {
+            display: block;
+        }
+    </style>
 </head>
 <body>
-    <h1>欢迎使用Crisp AI客服</h1>
-    <p>点击右下角的聊天图标开始对话</p>
+    <div class="header">
+        <div class="logo">
+            🐀 RatTrap AI客服
+        </div>
+        <div class="user-section" id="userSection">
+            <!-- 未登录状态 -->
+            <div id="loginPromptHeader" class="login-prompt">
+                <a href="/login" class="btn btn-secondary">登录</a>
+            </div>
+            <!-- 已登录状态 -->
+            <div id="userInfoHeader" class="user-content">
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">U</div>
+                    <span class="user-email" id="userEmail">user@example.com</span>
+                </div>
+                <button class="btn btn-logout" onclick="logout()">退出</button>
+            </div>
+        </div>
+    </div>
 
+    <div class="main-content">
+        <div class="welcome-box">
+            <h1>欢迎使用 RatTrap AI 客服</h1>
+            <p id="welcomeMessage">智能老鼠防治知识问答系统</p>
+
+            <div class="features">
+                <div class="feature-card">
+                    <div class="feature-icon">💬</div>
+                    <div class="feature-title">智能问答</div>
+                    <div class="feature-desc">24/7 即时回答老鼠防治问题</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📚</div>
+                    <div class="feature-title">知识库</div>
+                    <div class="feature-desc">丰富的老鼠习性和捕鼠器使用知识</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <div class="feature-title">精准推荐</div>
+                    <div class="feature-desc">根据您的问题推荐最佳解决方案</div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <!-- 未登录状态 -->
+                <div id="loginPromptMain" class="login-prompt">
+                    <a href="/login" class="btn btn-primary">登录以使用完整功能</a>
+                </div>
+                <!-- 已登录状态 -->
+                <div id="userActionsMain" class="user-content">
+                    <a href="/knowledge" class="btn btn-primary">📚 管理知识库</a>
+                    <button class="btn btn-secondary" onclick="openChat()">💬 开始咨询</button>
+                </div>
+            </div>
+
+            <p style="margin-top: 24px; color: #9ca3af; font-size: 14px;">
+                点击右下角的聊天图标随时开始对话
+            </p>
+        </div>
+    </div>
+
+    <!-- Crisp Chat Widget -->
     <script type="text/javascript">
         window.$crisp=[];
         window.CRISP_WEBSITE_ID="7ea85f39-a49f-4017-934c-010ed9c9db4d";
@@ -19,6 +277,48 @@
             s.async=1;
             d.getElementsByTagName("head")[0].appendChild(s);
         })();
+    </script>
+
+    <script>
+        // 检查登录状态
+        function checkAuth() {
+            const token = localStorage.getItem('access_token');
+            const email = localStorage.getItem('user_email');
+
+            if (token && email) {
+                // 已登录
+                document.getElementById('loginPromptHeader').classList.remove('show');
+                document.getElementById('loginPromptMain').classList.remove('show');
+                document.getElementById('userInfoHeader').classList.add('show');
+                document.getElementById('userActionsMain').classList.add('show');
+
+                // 显示用户信息
+                document.getElementById('userEmail').textContent = email;
+                document.getElementById('userAvatar').textContent = email.charAt(0).toUpperCase();
+                document.getElementById('welcomeMessage').textContent = `欢迎回来，${email}！`;
+            } else {
+                // 未登录
+                document.getElementById('loginPromptHeader').classList.add('show');
+                document.getElementById('loginPromptMain').classList.add('show');
+                document.getElementById('userInfoHeader').classList.remove('show');
+                document.getElementById('userActionsMain').classList.remove('show');
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('user_email');
+            window.location.reload();
+        }
+
+        function openChat() {
+            if (window.$crisp) {
+                window.$crisp.push(['do', 'chat:open']);
+            }
+        }
+
+        // 页面加载时检查登录状态
+        checkAuth();
     </script>
 </body>
 </html>
