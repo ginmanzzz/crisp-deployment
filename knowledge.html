@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>知识库管理 - RatTrap</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f3f4f6;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            color: #111827;
+        }
+
+        .header .user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .header .user-email {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .btn-logout {
+            padding: 8px 16px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .btn-logout:hover {
+            background: #dc2626;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 32px auto;
+            padding: 0 24px;
+        }
+
+        .upload-section {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .upload-section h2 {
+            font-size: 18px;
+            margin-bottom: 16px;
+            color: #111827;
+        }
+
+        .upload-form {
+            display: grid;
+            gap: 16px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 6px;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="file"],
+        .form-group select,
+        .form-group textarea {
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn-upload {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn-upload:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-upload:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .knowledge-list {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .knowledge-list h2 {
+            font-size: 18px;
+            margin-bottom: 16px;
+            color: #111827;
+        }
+
+        .knowledge-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .knowledge-table th {
+            text-align: left;
+            padding: 12px;
+            background: #f9fafb;
+            color: #6b7280;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .knowledge-table td {
+            padding: 12px;
+            border-top: 1px solid #e5e7eb;
+            font-size: 14px;
+        }
+
+        .knowledge-table tr:hover {
+            background: #f9fafb;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .badge-document {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge-image {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-text {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .btn-delete {
+            padding: 6px 12px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-delete:hover {
+            background: #dc2626;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f4f6;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 48px;
+            color: #6b7280;
+        }
+
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 16px;
+            opacity: 0.3;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #6ee7b7;
+        }
+
+        .alert-error {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .image-preview {
+            max-width: 100px;
+            max-height: 100px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .image-preview:hover {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🐀 RatTrap 知识库管理</h1>
+        <div class="user-info">
+            <span class="user-email" id="userEmail">Loading...</span>
+            <button class="btn-logout" onclick="logout()">退出登录</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="successAlert" class="alert alert-success hidden"></div>
+        <div id="errorAlert" class="alert alert-error hidden"></div>
+
+        <div class="upload-section">
+            <h2>上传新知识</h2>
+            <form class="upload-form" id="uploadForm">
+                <div class="form-group">
+                    <label for="file">选择文件 *</label>
+                    <input type="file" id="file" name="file" accept=".txt,.jpg,.jpeg,.png,.webp,.pdf,.docx" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="title">标题</label>
+                        <input type="text" id="title" name="title" placeholder="知识标题（可选）">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="category">分类 *</label>
+                        <select id="category" name="category" required>
+                            <option value="general">通用知识 (general)</option>
+                            <option value="rodent_knowledge">老鼠知识 (rodent_knowledge)</option>
+                            <option value="trap_usage">捕鼠器使用 (trap_usage)</option>
+                            <option value="faq">常见问题 (faq)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="language">语言</label>
+                        <select id="language" name="language">
+                            <option value="zh">中文 (zh)</option>
+                            <option value="en">英语 (en)</option>
+                            <option value="ja">日语 (ja)</option>
+                            <option value="es">西班牙语 (es)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="visibility">可见性</label>
+                        <select id="visibility" name="visibility">
+                            <option value="private">私有 (private)</option>
+                            <option value="public">公开 (public)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="tags">标签（用逗号分隔）</label>
+                    <input type="text" id="tags" name="tags" placeholder="例如: 老鼠习性, 防治方法">
+                </div>
+
+                <div class="form-group">
+                    <label for="source_url">来源 URL</label>
+                    <input type="text" id="source_url" name="source_url" placeholder="https://example.com/article">
+                </div>
+
+                <button type="submit" class="btn-upload" id="uploadBtn">
+                    <span id="uploadBtnText">上传知识库</span>
+                    <span id="uploadBtnLoading" class="hidden">
+                        <span class="loading-spinner"></span> 上传中...
+                    </span>
+                </button>
+            </form>
+        </div>
+
+        <div class="knowledge-list">
+            <h2>知识库列表</h2>
+            <div id="knowledgeTableContainer">
+                <div class="empty-state">
+                    <div class="loading-spinner" style="width: 40px; height: 40px;"></div>
+                    <p style="margin-top: 16px;">加载中...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Crisp Chat Widget -->
+    <script type="text/javascript">
+        window.$crisp=[];
+        window.CRISP_WEBSITE_ID="7ea85f39-a49f-4017-934c-010ed9c9db4d";
+        (function(){
+            d=document;
+            s=d.createElement("script");
+            s.src="https://client.crisp.chat/l.js";
+            s.async=1;
+            d.getElementsByTagName("head")[0].appendChild(s);
+        })();
+    </script>
+
+    <script>
+        // Auth check
+        const token = localStorage.getItem('access_token');
+        const userEmail = localStorage.getItem('user_email');
+
+        if (!token) {
+            window.location.href = '/login';
+        }
+
+        document.getElementById('userEmail').textContent = userEmail || 'User';
+
+        function logout() {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('user_email');
+            window.location.href = '/login';
+        }
+
+        function showSuccess(message) {
+            const alert = document.getElementById('successAlert');
+            alert.textContent = message;
+            alert.classList.remove('hidden');
+            setTimeout(() => alert.classList.add('hidden'), 5000);
+        }
+
+        function showError(message) {
+            const alert = document.getElementById('errorAlert');
+            alert.textContent = message;
+            alert.classList.remove('hidden');
+            setTimeout(() => alert.classList.add('hidden'), 5000);
+        }
+
+        // Load knowledge list
+        async function loadKnowledgeList() {
+            try {
+                const response = await fetch('/api/knowledge', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load knowledge base');
+                }
+
+                const data = await response.json();
+                renderKnowledgeTable(data);
+            } catch (error) {
+                console.error('Error loading knowledge:', error);
+                document.getElementById('knowledgeTableContainer').innerHTML = `
+                    <div class="empty-state">
+                        <p>加载失败：${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function renderKnowledgeTable(knowledgeList) {
+            const container = document.getElementById('knowledgeTableContainer');
+
+            if (knowledgeList.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <p>暂无知识库条目</p>
+                        <p style="font-size: 12px; margin-top: 8px;">上传第一个知识文件开始使用</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const tableHTML = `
+                <table class="knowledge-table">
+                    <thead>
+                        <tr>
+                            <th>标题</th>
+                            <th>类型</th>
+                            <th>分类</th>
+                            <th>语言</th>
+                            <th>创建时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${knowledgeList.map(item => `
+                            <tr>
+                                <td>
+                                    ${item.image_url ? `<img src="${item.image_url}" class="image-preview" onclick="window.open('${item.image_url}', '_blank')" alt="${item.title}"><br>` : ''}
+                                    <strong>${item.title || '无标题'}</strong>
+                                    ${item.source_url ? `<br><a href="${item.source_url}" target="_blank" style="font-size: 12px; color: #667eea;">查看来源</a>` : ''}
+                                </td>
+                                <td><span class="badge badge-${item.content_type}">${item.content_type}</span></td>
+                                <td>${item.category}</td>
+                                <td>${item.language}</td>
+                                <td style="font-size: 12px; color: #6b7280;">
+                                    ${new Date(item.created_at).toLocaleString('zh-CN')}
+                                </td>
+                                <td>
+                                    <button class="btn-delete" onclick="deleteKnowledge('${item.id}', '${item.title}')">删除</button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+
+            container.innerHTML = tableHTML;
+        }
+
+        async function deleteKnowledge(id, title) {
+            if (!confirm(`确定要删除知识库"${title}"吗？此操作不可撤销。`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/knowledge/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || '删除失败');
+                }
+
+                showSuccess(`已删除知识库"${title}"`);
+                loadKnowledgeList();
+            } catch (error) {
+                console.error('Error deleting knowledge:', error);
+                showError(`删除失败：${error.message}`);
+            }
+        }
+
+        // Upload form
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData();
+            const fileInput = document.getElementById('file');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                showError('请选择文件');
+                return;
+            }
+
+            formData.append('file', file);
+
+            const title = document.getElementById('title').value;
+            if (title) formData.append('title', title);
+
+            formData.append('category', document.getElementById('category').value);
+            formData.append('language', document.getElementById('language').value);
+            formData.append('visibility', document.getElementById('visibility').value);
+
+            const tags = document.getElementById('tags').value;
+            if (tags) {
+                const tagsArray = tags.split(',').map(t => t.trim()).filter(t => t);
+                formData.append('tags', JSON.stringify(tagsArray));
+            }
+
+            const sourceUrl = document.getElementById('source_url').value;
+            if (sourceUrl) formData.append('source_url', sourceUrl);
+
+            // Show loading state
+            const uploadBtn = document.getElementById('uploadBtn');
+            const uploadBtnText = document.getElementById('uploadBtnText');
+            const uploadBtnLoading = document.getElementById('uploadBtnLoading');
+            uploadBtn.disabled = true;
+            uploadBtnText.classList.add('hidden');
+            uploadBtnLoading.classList.remove('hidden');
+
+            try {
+                const response = await fetch('/api/knowledge/upload', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                    body: formData,
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error?.message || data.error || '上传失败');
+                }
+
+                showSuccess('知识库上传成功！');
+                document.getElementById('uploadForm').reset();
+                loadKnowledgeList();
+            } catch (error) {
+                console.error('Error uploading knowledge:', error);
+                showError(`上传失败：${error.message}`);
+            } finally {
+                uploadBtn.disabled = false;
+                uploadBtnText.classList.remove('hidden');
+                uploadBtnLoading.classList.add('hidden');
+            }
+        });
+
+        // Initial load
+        loadKnowledgeList();
+
+        // Auto refresh every 30 seconds
+        setInterval(loadKnowledgeList, 30000);
+    </script>
+</body>
+</html>
