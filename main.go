@@ -183,7 +183,7 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
 	w.Write(body)
 }
 
-// Get knowledge list - proxies to Supabase
+// Get knowledge list - proxies to Supabase Edge Function
 func handleKnowledgeList(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -192,32 +192,62 @@ func handleKnowledgeList(w http.ResponseWriter, r *http.Request) {
 
 	// Get auth token from header
 	authHeader := r.Header.Get("Authorization")
-	token := ""
-	if authHeader != "" {
-		parts := strings.Split(authHeader, " ")
-		if len(parts) == 2 {
-			token = parts[1]
-		}
+	if authHeader == "" {
+		http.Error(w, `{"error": "Missing authorization"}`, http.StatusUnauthorized)
+		return
 	}
 
-	// Call Supabase REST API to get knowledge base entries
-	apiURL := fmt.Sprintf("%s/rest/v1/knowledge_base?select=*&order=created_at.desc", supabaseURL)
+	// Parse query parameters for pagination
+	queryParams := r.URL.Query()
+	page := queryParams.Get("page")
+	limit := queryParams.Get("limit")
+	category := queryParams.Get("category")
+	language := queryParams.Get("language")
+	search := queryParams.Get("search")
+
+	// Build Edge Function URL with query params
+	apiURL := fmt.Sprintf("%s/functions/v1/knowledge-base", supabaseURL)
+	if page != "" || limit != "" || category != "" || language != "" || search != "" {
+		params := make([]string, 0)
+		if page != "" {
+			params = append(params, "page="+page)
+		} else {
+			params = append(params, "page=1")
+		}
+		if limit != "" {
+			params = append(params, "limit="+limit)
+		} else {
+			params = append(params, "limit=100")
+		}
+		if category != "" {
+			params = append(params, "category="+category)
+		}
+		if language != "" {
+			params = append(params, "language="+language)
+		}
+		if search != "" {
+			params = append(params, "search="+search)
+		}
+		if len(params) > 0 {
+			apiURL += "?" + strings.Join(params, "&")
+		}
+	} else {
+		apiURL += "?page=1&limit=100"
+	}
+
 	req, err := http.NewRequest("GET", apiURL, nil)
 	if err != nil {
 		http.Error(w, `{"error": "Failed to create request"}`, http.StatusInternalServerError)
 		return
 	}
 
-	// Use anon key - respects RLS policies
-	req.Header.Set("apikey", supabaseAnonKey)
-	if token != "" {
-		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
-	}
+	// Forward auth token to Edge Function
+	req.Header.Set("Authorization", authHeader)
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		log.Printf("Error calling Supabase: %v", err)
+		log.Printf("Error calling Supabase Edge Function: %v", err)
 		http.Error(w, `{"error": "Failed to fetch knowledge base"}`, http.StatusInternalServerError)
 		return
 	}

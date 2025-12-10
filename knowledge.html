@@ -342,10 +342,19 @@
                     <div class="form-group">
                         <label for="visibility">可见性</label>
                         <select id="visibility" name="visibility">
-                            <option value="private">私有 (private)</option>
-                            <option value="public">公开 (public)</option>
+                            <option value="private">私有 (private) - 仅本租户</option>
+                            <option value="public">公开 (public) - 所有用户可见</option>
                         </select>
                     </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="access_level">访问级别</label>
+                    <select id="access_level" name="access_level">
+                        <option value="public">公开 (public) - 所有人可下载</option>
+                        <option value="internal">内部 (internal) - 登录用户可下载</option>
+                        <option value="private">私密 (private) - 仅管理员可下载</option>
+                    </select>
                 </div>
 
                 <div class="form-group">
@@ -452,7 +461,7 @@
         // Load knowledge list
         async function loadKnowledgeList() {
             try {
-                const response = await fetch('/api/knowledge', {
+                const response = await fetch('/api/knowledge?page=1&limit=100', {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                     },
@@ -462,8 +471,10 @@
                     throw new Error('Failed to load knowledge base');
                 }
 
-                const data = await response.json();
-                renderKnowledgeTable(data);
+                const result = await response.json();
+                // Edge Function returns {data: [], pagination: {}}
+                const knowledgeList = result.data || result;
+                renderKnowledgeTable(knowledgeList);
             } catch (error) {
                 console.error('Error loading knowledge:', error);
                 document.getElementById('knowledgeTableContainer').innerHTML = `
@@ -490,6 +501,17 @@
                 return;
             }
 
+            const accessLevelMap = {
+                'public': '🌐 公开',
+                'internal': '🏢 内部',
+                'private': '🔒 私密'
+            };
+
+            const visibilityMap = {
+                'public': '👥 公开',
+                'private': '🔐 私有'
+            };
+
             const tableHTML = `
                 <table class="knowledge-table">
                     <thead>
@@ -497,7 +519,9 @@
                             <th>标题</th>
                             <th>类型</th>
                             <th>分类</th>
-                            <th>语言</th>
+                            <th>可见性</th>
+                            <th>访问级别</th>
+                            <th>文件</th>
                             <th>创建时间</th>
                             <th>操作</th>
                         </tr>
@@ -508,16 +532,26 @@
                                 <td>
                                     ${item.image_url ? `<img src="${item.image_url}" class="image-preview" onclick="window.open('${item.image_url}', '_blank')" alt="${item.title}"><br>` : ''}
                                     <strong>${item.title || '无标题'}</strong>
-                                    ${item.source_url ? `<br><a href="${item.source_url}" target="_blank" style="font-size: 12px; color: #667eea;">查看来源</a>` : ''}
+                                    ${item.source_file_name ? `<br><span style="font-size: 11px; color: #9ca3af;">📄 ${item.source_file_name}</span>` : ''}
                                 </td>
                                 <td><span class="badge badge-${item.content_type}">${item.content_type}</span></td>
-                                <td>${item.category}</td>
-                                <td>${item.language}</td>
+                                <td style="font-size: 12px;">${item.category || 'general'}</td>
+                                <td style="font-size: 12px;">${visibilityMap[item.visibility] || item.visibility}</td>
+                                <td style="font-size: 12px;">${accessLevelMap[item.access_level] || item.access_level}</td>
+                                <td>
+                                    ${item.file_url ? `
+                                        ${item.source_url ? `
+                                            <a href="${item.file_url}" target="_blank" style="font-size: 12px; color: #667eea;">🔗 外部链接</a>
+                                        ` : `
+                                            <a href="${item.file_url}" target="_blank" style="font-size: 12px; color: #667eea;">📥 下载文件</a>
+                                        `}
+                                    ` : '<span style="font-size: 12px; color: #9ca3af;">无文件</span>'}
+                                </td>
                                 <td style="font-size: 12px; color: #6b7280;">
                                     ${new Date(item.created_at).toLocaleString('zh-CN')}
                                 </td>
                                 <td>
-                                    <button class="btn-delete" onclick="deleteKnowledge('${item.id}', '${item.title}')">删除</button>
+                                    <button class="btn-delete" onclick="deleteKnowledge('${item.id}', '${item.title || '无标题'}')">删除</button>
                                 </td>
                             </tr>
                         `).join('')}
@@ -575,6 +609,7 @@
             formData.append('category', document.getElementById('category').value);
             formData.append('language', document.getElementById('language').value);
             formData.append('visibility', document.getElementById('visibility').value);
+            formData.append('access_level', document.getElementById('access_level').value);
 
             const tags = document.getElementById('tags').value;
             if (tags) {
